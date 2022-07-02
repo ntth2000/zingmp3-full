@@ -14,8 +14,19 @@ dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-const mongoURL = process.env.MONGO_URL || "test";
-// || "mongodb://localhost:27017/zing-mp3";
+const whitelist = ["http://localhost:8800"];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+const mongoURL = process.env.MONGO_URL || "mongodb://localhost:27017/zing-mp3";
 mongoose
   .connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("DB connection succeeds"))
