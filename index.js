@@ -1,6 +1,5 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
@@ -14,18 +13,7 @@ dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-const whitelist = ["http://localhost:8800"];
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
+
 const mongoURL = process.env.MONGO_URL || "mongodb://localhost:27017/zing-mp3";
 mongoose
   .connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -40,10 +28,11 @@ app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/", homeRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+if (process.env.NODE_ENV == "production") {
+  const path = require("path");
+  app.get("/", (req, res) => {
+    app.use(express.static(path.resolve(__dirname, "client", "build")));
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
   });
 }
 const port = process.env.PORT || 8800;
